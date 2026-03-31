@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hubo un problema | VSV Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #ffffff; color: #111; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .error-card { text-align: center; max-width: 500px; padding: 40px; }
+        .error-icon { font-size: 4rem; color: #dc3545; background: #ffebee; width: 100px; height: 100px; line-height: 100px; border-radius: 50%; margin: 0 auto 30px; }
+        h1 { font-weight: 800; letter-spacing: -1px; margin-bottom: 15px; }
+        p { color: #666; font-size: 1.1rem; margin-bottom: 40px; line-height: 1.6; }
+        .btn-retry { background-color: #111; color: white; border-radius: 30px; font-weight: 600; padding: 15px 40px; text-decoration: none; transition: 0.3s; border: none; display: inline-block; margin-bottom: 15px; }
+        .btn-retry:hover { background-color: #333; color: white; }
+        .btn-wa { color: #25D366; font-weight: 600; text-decoration: none; font-size: 0.9rem; display: block; }
+        .btn-wa:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <div class="error-icon">!</div>
+        <h1>El pago no se pudo procesar</h1>
+        <p>No te preocupes, no se ha realizado ningún cargo. Podés intentar nuevamente con otro medio de pago o hablarnos directamente por WhatsApp.</p>
+        
+        <a href="{% url 'cart_summary' %}" class="btn-retry">Reintentar desde el carrito</a>
+        <a href="https://wa.me/543544630650" class="btn-wa">O prefiero coordinar por WhatsApp</a>
+    </div>
+</body>
+</html>

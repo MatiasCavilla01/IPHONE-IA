@@ -1,0 +1,97 @@
+{% for seccion in categorias %}
+    <div class="row mt-5 mb-4 align-items-center px-3">
+        <div class="col-auto">
+            <h2 class="display-6 fw-extrabold m-0" style="letter-spacing: -2px; color: #111;">
+                {{ seccion.nombre }}
+            </h2>
+        </div>
+        <div class="col">
+            <div style="height: 2px; background: linear-gradient(90deg, #eeeeee 0%, rgba(238,238,238,0) 100%);"></div>
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5 px-2">
+        {% for producto in seccion.productos.all %}
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden product-card p-3" style="transition: all 0.3s ease; border: 1px solid rgba(0,0,0,0.03) !important;">
+                
+                <div class="position-relative bg-light rounded-4 mb-3 d-flex align-items-center justify-content-center" 
+                     style="height: 250px; width: 100%; overflow: hidden;">
+                    
+                    <span class="position-absolute top-0 start-0 m-3 badge rounded-pill bg-white text-dark shadow-sm py-2 px-3" 
+                          style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; z-index: 10;">
+                        {{ seccion.nombre }}
+                    </span>
+
+                    <a href="{% url 'producto_detalle' producto.id %}" class="w-100 h-100 d-flex align-items-center justify-content-center p-3">
+                        <img src="{{ producto.imagen.url }}" 
+                             class="img-fluid" 
+                             style="max-height: 100%; max-width: 100%; object-fit: contain; transition: 0.5s;" 
+                             onmouseover="this.style.transform='scale(1.08)'" 
+                             onmouseout="this.style.transform='scale(1)'" 
+                             alt="{{ producto.nombre }}">
+                    </a>
+                </div>
+                
+                <div class="px-2">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <a href="{% url 'producto_detalle' producto.id %}" class="text-decoration-none text-dark">
+                            <h5 class="fw-bold mb-0 text-truncate" style="letter-spacing: -0.5px; font-size: 1.1rem; max-width: 180px;">
+                                {{ producto.nombre }}
+                            </h5>
+                        </a>
+                        <h5 class="fw-extrabold text-dark mb-0" id="display-price-{{ producto.id }}" style="font-size: 1.2rem;">${{ producto.precio }}</h5>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="text-warning" style="font-size: 0.85rem;">⭐ 4.8</div>
+                        {% if producto.stock > 0 %}
+                            <span class="badge bg-success-subtle text-success rounded-pill" style="font-size: 0.6rem; font-weight: 700;">EN STOCK: {{ producto.stock }}</span>
+                        {% else %}
+                            <span class="badge bg-danger-subtle text-danger rounded-pill" style="font-size: 0.6rem; font-weight: 700;">AGOTADO</span>
+                        {% endif %}
+                    </div>
+
+                    {% if producto.stock > 0 %}
+                        <div class="mb-3">
+                            <label class="text-muted fw-bold mb-1" style="font-size: 9px; text-uppercase: uppercase; letter-spacing: 0.5px;">Elegí tu versión</label>
+                            <select class="form-select form-select-sm rounded-3 bg-light border-0 variant-selector" 
+                                    style="font-weight: 500; height: 38px; cursor: pointer;"
+                                    data-product-id="{{ producto.id }}" 
+                                    data-base-price="{{ producto.precio }}">
+                                <option value="base" data-precio="0">Estándar (Base)</option>
+                                {% for v in producto.variantes.all %}
+                                    <option value="{{ v.id }}" data-precio="{{ v.precio_adicional }}">
+                                        {{ v.capacidad }} - {{ v.color }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="number" id="qty-{{ producto.id }}" value="1" min="1" max="{{ producto.stock }}" 
+                                   class="form-control text-center bg-light border-0" 
+                                   style="width: 50px; height: 42px; border-radius: 12px; font-weight: 700; font-size: 0.9rem;">
+                            
+                            <button class="btn btn-dark flex-fill rounded-pill fw-bold btn-add shadow-sm" 
+                                    style="font-size: 0.8rem; height: 42px; transition: 0.3s;" 
+                                    data-index="{{ producto.id }}">
+                                Agregar
+                            </button>
+                            
+                            <a href="{% url 'cart_summary' %}" class="btn btn-outline-dark rounded-circle d-flex align-items-center justify-content-center shadow-sm buy-btn-icon" 
+                               style="width: 42px; height: 42px; transition: 0.3s;">
+                                🛒
+                            </a>
+                        </div>
+                    {% else %}
+                        <button class="btn btn-light disabled w-100 rounded-pill fw-bold text-muted" style="font-size: 0.85rem; height: 42px;">Sin Stock</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <div class="col-12"><p class="text-muted">No hay productos aquí.</p></div>
+        {% endfor %}
+    </div>
+{% endfor %}

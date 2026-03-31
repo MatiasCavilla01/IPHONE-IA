@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Finalizar Compra | VSV Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #ffffff; }
+        .checkout-container { max-width: 500px; margin: 100px auto; text-center: center; }
+        .apple-logo { font-size: 2rem; margin-bottom: 20px; }
+        #wallet_container { margin-top: 30px; }
+    </style>
+</head>
+<body>
+<div class="container checkout-container text-center">
+    <div class="apple-logo">📱</div>
+    <h1 class="fw-bold">Paga de forma segura.</h1>
+    <p class="text-muted">Estás usando el servidor seguro de VSV Store para completar tu pedido.</p>
+    
+    <div class="card p-4 bg-light">
+        <p class="mb-1 text-uppercase small fw-bold text-muted">Total a pagar</p>
+        <h2 class="fw-bold mb-0">${{ total_checkout|default:"Consultar" }}</h2>
+    </div>
+
+    <div id="wallet_container"></div>
+
+    <p class="mt-5 small text-muted">
+        🔒 Tus datos están protegidos por cifrado de extremo a extremo.
+    </p>
+    <a href="{% url 'cart_summary' %}" class="btn btn-link text-decoration-none">Volver al carrito</a>
+</div>
+
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+<script>
+  // REEMPLAZA TU PUBLIC KEY AQUÍ
+  const mp = new MercadoPago('TEST-510ea6f2-b5b0-48be-8a86-42fc3da73781', {
+    locale: 'es-AR'
+  });
+
+  mp.bricks().create("wallet", "wallet_container", {
+    initialization: {
+        preferenceId: "{{ preference_id }}",
+    }
+  });
+</script>
+</body>
+</html>
