@@ -26,7 +26,15 @@ SECRET_KEY = "django-insecure-a68=f=!ur^qshw&w^4%!$3!tt9jp$ds&#q80o=foa9-f!$3)vi
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# settings.py
+
+# Podés agregar la URL específica que te dio el error o usar el comodín para ngrok
+ALLOWED_HOSTS = [
+    'localhost', 
+    '127.0.0.1', 
+    'elvia-uncited-humbly.ngrok-free.dev',  # La URL exacta que te salió
+    '.ngrok-free.dev',                      # Esto permite cualquier URL de ngrok
+]
 
 
 # Application definition

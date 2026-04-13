@@ -11,13 +11,30 @@ from django.db.models import Prefetch
 from django.shortcuts import redirect
 import urllib.parse
 from django.http import JsonResponse
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+import re
+import json       # <--- ESTA ES LA QUE FALTA
+import requests   # <--- También la vas a necesitar para responder mensajes
+
+
 
 def index(request):
-    # Traemos las categorías ordenadas y sus productos de un solo golpe (optimizado)
-    categorias = Categoria.objects.all().order_by('orden').prefetch_related('productos')
+    todas_las_categorias = Categoria.objects.all()
+    categoria_slug = request.GET.get('categoria')
     
+    productos = Producto.objects.all()
+    categoria_obj = None
+
+    if categoria_slug:
+        # Filtramos por el nombre o slug
+        productos = Producto.objects.filter(categoria__nombre__iexact=categoria_slug)
+        categoria_obj = categoria_slug # O busca el objeto: Categoria.objects.get(nombre=categoria_slug)
+
     return render(request, 'store/index.html', {
-        'categorias': categorias
+        'categorias': todas_las_categorias,
+        'productos': productos,
+        'categoria_seleccionada': categoria_obj # Esto activa el IF en el template
     })
 
 def cart_add(request):
@@ -284,11 +301,222 @@ def procesar_pedido(request):
 def pago_fallido(request):
     return render(request, 'store/pago_fallido.html')
 
-def api_productos(request):
-    # Solo permitimos que el bot entre con una clave secreta
-    api_key = request.GET.get('key')
-    if api_key != "1234567898":
-        return JsonResponse({'error': 'No autorizado'}, status=403)
+def router_mensajes(mensaje_usuario):
+    mensaje_clean = mensaje_usuario.lower().strip()
+    
+    if "stock" in mensaje_clean:
+        palabras = mensaje_clean.split()
+        
+        # Caso A: El usuario puso solo "stock"
+        if len(palabras) == 1:
+            return "¡Hola! ¿De qué producto buscás stock? Decime el nombre (ej: iPhone 13) y te confirmo."
 
-    productos = Producto.objects.all().values('id', 'nombre', 'precio', 'stock')
-    return JsonResponse(list(productos), safe=False)
+        # Caso B: Buscamos el producto en la DB
+        # Filtramos palabras que no son el nombre del producto
+        excluir = ["stock", "tenes", "hay", "de", "el", "la", "un", "precio", "vsv", "vcv"]
+        busqueda = [p for p in palabras if p not in excluir]
+
+        for p in busqueda:
+            # Buscamos en la base de datos de Django
+            prod = Producto.objects.filter(nombre__icontains=p).first()
+            if prod:
+                return (f"¡Sí! De *{prod.nombre}* tenemos {prod.stock} unidades. "
+                        f"Precio: ${prod.precio}. ¿Te gustaría comprarlo?")
+
+        return "No encontré ese producto en mi lista. ¿Podrías decirme el nombre exacto?"
+
+    # Si no es stock, va a Gemini
+    return llamar_a_gemini(mensaje_usuario)
+
+    
+# tools.py (Lógica de negocio)
+
+def crear_pedido_automatico(producto_nombre, cantidad, cliente_whatsapp):
+    """
+    Busca el producto, verifica stock y crea un pedido en la DB.
+    Retorna un mensaje de éxito o error.
+    """
+    try:
+        from .models import Producto, Pedido # Importa tus modelos
+        
+        producto = Producto.objects.filter(nombre__icontains=producto_nombre).first()
+        
+        if not producto:
+            return f"Lo siento, no encontré el producto '{producto_nombre}'."
+        
+        if producto.stock < cantidad:
+            return f"No tengo stock suficiente de {producto.nombre}. Solo quedan {producto.stock}."
+
+        # Creamos el pedido (esto ya interactúa con tu DB de Django)
+        nuevo_pedido = Pedido.objects.create(
+            producto=producto,
+            cantidad=cantidad,
+            telefono_cliente=cliente_whatsapp,
+            estado='Pendiente'
+        )
+        
+        # Aquí podrías generar el link de Mercado Pago
+        link_pago = f"https://mpago.la/vsv-store-ejemplo-{nuevo_pedido.id}"
+        
+        return f"¡Pedido creado! ID: {nuevo_pedido.id}. Producto: {producto.nombre}. Link de pago: {link_pago}"
+    
+    except Exception as e:
+        return f"Hubo un error al procesar el pedido: {str(e)}"
+    
+import google.generativeai as genai
+import os
+
+import google.generativeai as genai
+from google.generativeai.types import RequestOptions
+
+# 1. Configuramos la API Key con transporte REST para evitar errores de ruta
+import requests
+import json
+
+def llamar_a_gemini(mensaje_usuario):
+    # Tu API Key (Mantenela segura)
+    api_key = "AIzaSyDcTdHNH4xDmPYj1T5r3ivoh4J5PubuuzI" 
+    
+    # URL actualizada al modelo que tenés activo según tu diagnóstico
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key={api_key}"
+    
+    headers = {'Content-Type': 'application/json'}
+    
+    data = {
+        "contents": [{
+            "parts": [{"text": f"Eres el asistente de VSV STORE. Responde brevemente a: {mensaje_usuario}"}]
+        }]
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        res_json = response.json()
+        
+        # Log para control en la terminal de VS Code
+        print(f"Respuesta Raw de Google: {res_json}")
+        
+        if response.status_code == 200:
+            # Extraemos la respuesta del modelo
+            return res_json['candidates'][0]['content']['parts'][0]['text']
+        else:
+            return f"Error de API ({response.status_code}): {res_json.get('error', {}).get('message')}"
+            
+    except Exception as e:
+        print(f"Error en la llamada: {e}")
+        return "Hola! Estamos con mucha demanda en VSV Store, ¿me repetís tu consulta en un momento?"
+
+ACCESS_TOKEN = "EAAbwNepQP9IBRLbghlp7ZB41JeIe2uV8RWLGFAsMmYfPeUTYoZAJi4ICl5p0Pq6PhKIlaqXUzEcZANwkZAtLfkozzqNZCcZCgPdaREfCf3im4ZAXMaHk3VQdljmD62rSBdvf2LsvtsriC9eO0OHueZCg10ztu7adP78WrEyKQ1EeDMTqXLsIZARlY1ngUbKNDG31NQlCzT5ZA9NHf5H1pRQl9tAVNvGEWbTT3A7LeEfpyWR6w2jwLtdjZC1phF5DUifZBcFyvWritRqmnDKtbTZC1OXsonAZDZD"
+PHONE_NUMBER_ID = "1101551966368735"
+VERSION = "v25.0" # O la que diga tu panel
+
+def enviar_mensaje_whatsapp(telefono, texto):
+    # --- LIMPIEZA DE NÚMERO PARA ARGENTINA ---
+    # Si el número empieza con 549, le sacamos el 9 para probar
+    if telefono.startswith("549"):
+        # Esto lo transforma de 5493544... a 543544...
+        telefono_limpio = "54" + telefono[3:]
+    else:
+        telefono_limpio = telefono
+
+    url = f"https://graph.facebook.com/{VERSION}/{PHONE_NUMBER_ID}/messages"
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Content-Type": "application/json",
+    }
+    data = {
+        "messaging_product": "whatsapp",
+        "to": telefono_limpio, # <--- Usamos el número limpio
+        "type": "text",
+        "text": {"body": texto},
+    }
+    
+    response = requests.post(url, headers=headers, json=data)
+    print(f"Enviando a: {telefono_limpio} | Respuesta Meta: {response.json()}")
+    return response.json()
+
+
+@csrf_exempt
+def whatsapp_webhook(request):
+    if request.method == 'GET':
+        return HttpResponse(request.GET.get('hub.challenge'), status=200)
+
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        try:
+            # 1. Extraer info del mensaje
+            value = data['entry'][0]['changes'][0]['value']
+            if 'messages' not in value:
+                return HttpResponse('EVENT_RECEIVED', status=200)
+
+            mensaje_usuario = value['messages'][0]['text']['body']
+            numero_cliente = value['messages'][0]['from']
+            
+            print(f"--- NUEVO MENSAJE: {mensaje_usuario} ---")
+
+            # 2. BUSCADOR EN BASE DE DATOS (Cerebro Lógico)
+            # 1. Extraemos y limpiamos el mensaje
+            mensaje_lower = mensaje_usuario.lower().strip()
+
+            # 2. Lógica de "Portero" para Stock
+            respuesta_final = None
+
+            if "stock" in mensaje_lower:
+                palabras = mensaje_lower.split()
+                # Quitamos la palabra 'stock' para ver si queda el nombre de un producto
+                busqueda_db = [p for p in palabras if p not in ["stock", "tenes", "hay", "de", "el"]]
+
+                if not busqueda_db:
+                    # CASO: El cliente dijo solo "stock" o "tenes stock?"
+                    respuesta_final = (
+                        "¡Hola! En *VSV STORE* tenemos de todo. 😎\n\n"
+                        "¿Querés que te pase la **lista completa** de productos o estás buscando **alguno en especial** (ej: iPhone, AirPods)?"
+                    )
+                else:
+                    # CASO: El cliente ya especificó algo, ej: "stock iphone"
+                    for p in busqueda_db:
+                        if len(p) > 2:
+                            prod = Producto.objects.filter(nombre__icontains=p).first()
+                            if prod:
+                                respuesta_final = (
+                                    f"¡Sí! Del *{prod.nombre}* nos quedan {prod.stock} unidades. "
+                                    f"Precio: ${prod.precio}. ¿Te lo reservo?"
+                                )
+                                break
+                    
+                    if not respuesta_final:
+                        respuesta_final = "No encontré ese modelo exacto, pero tengo otros iPhones y accesorios. ¿Querés ver la lista completa?"
+
+            # 3. Respuesta para la "Lista Completa"
+            if "lista completa" in mensaje_lower or "todo el stock" in mensaje_lower:
+                productos = Producto.objects.filter(stock__gt=0)[:10] # Traemos los primeros 10 con stock
+                lista_texto = "Libre de elegir! Acá tenés lo disponible:\n"
+                for p in productos:
+                    lista_texto += f"• {p.nombre} - ${p.precio}\n"
+                respuesta_final = lista_texto
+
+            # 4. Si después de todo lo anterior respuesta_final sigue siendo None, va a Gemini
+            if not respuesta_final:
+                respuesta_final = llamar_a_gemini(mensaje_usuario)
+
+            # 4. ENVIAR RESPUESTA
+            enviar_mensaje_whatsapp(numero_cliente, respuesta_final)
+
+        except Exception as e:
+            print(f"Error en el proceso: {e}")
+
+        return HttpResponse('EVENT_RECEIVED', status=200)
+
+def registrar_pedido_en_db(producto_nombre, cantidad):
+    """
+    Esta función la llamará Gemini automáticamente.
+    """
+    try:
+        from .models import Producto, Pedido
+        prod = Producto.objects.filter(nombre__icontains=producto_nombre).first()
+        if prod and prod.stock >= int(cantidad):
+            # Aquí creas el pedido en tu PostgreSQL
+            # Pedido.objects.create(producto=prod, cantidad=cantidad, ...)
+            return f"EXITO: Pedido registrado de {cantidad} {prod.nombre}. Total: ${prod.precio * int(cantidad)}"
+        return "ERROR: No hay stock suficiente o producto no encontrado."
+    except Exception as e:
+        return f"ERROR: {str(e)}"

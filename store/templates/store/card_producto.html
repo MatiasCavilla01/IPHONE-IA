@@ -1,0 +1,141 @@
+<div class="col">
+    <div class="card h-100 border-0 product-card p-3" 
+         style="background: #0d0d0d; border: 1px solid #1a1a1a !important; border-radius: 24px; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);">
+        
+        <!-- Contenedor de Imagen con Brillo Naranja Sutil -->
+        <div class="position-relative bg-dark rounded-4 mb-3 d-flex align-items-center justify-content-center overflow-hidden"
+             style="height: 250px; border: 1px solid #1a1a1a; box-shadow: inset 0 0 30px rgba(0,0,0,0.8);">
+            
+            <!-- Badge Naranja Glass -->
+            <span class="position-absolute top-0 end-0 m-3 badge rounded-pill" 
+                style="background: rgba(255, 107, 0, 0.1); color: #ff6b00; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 107, 0, 0.2); font-size: 9px; letter-spacing: 1px; font-weight: 700;">
+                {{ producto.categoria.nombre|upper }}
+            </span>
+
+            <a href="{% url 'producto_detalle' producto.id %}" class="w-100 h-100 d-flex align-items-center justify-content-center p-4">
+                <img src="{{ producto.imagen.url }}"
+                     class="img-fluid"
+                     style="max-height: 100%; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6)); transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1);"
+                     onmouseover="this.style.transform='scale(1.12) rotate(-1deg)'"
+                     onmouseout="this.style.transform='scale(1) rotate(0deg)'"
+                     alt="{{ producto.nombre }}">
+            </a>
+        </div>
+        
+        <!-- Detalles del Producto -->
+        <div class="px-1">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    <a href="{% url 'producto_detalle' producto.id %}" class="text-decoration-none">
+                        <h6 class="fw-bold mb-0 text-white text-truncate" style="letter-spacing: -0.5px; font-size: 1rem; max-width: 150px;">
+                            {{ producto.nombre }}
+                        </h6>
+                    </a>
+                    <div class="d-flex align-items-center gap-1 mt-1">
+                        <span style="color: #ff6b00; font-size: 0.7rem;">★</span>
+                        <span style="color: #666; font-size: 0.7rem; font-weight: 600;">4.8</span>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <span class="d-block fw-bolder" 
+                        id="display-price-{{ producto.id }}" 
+                        style="color: #ff6b00; font-size: 1.1rem; letter-spacing: -0.5px;">
+                        ${{ producto.precio }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                {% if producto.stock > 0 %}
+                    <span class="badge rounded-pill" style="background: rgba(255, 255, 255, 0.05); color: #fff; font-size: 0.55rem; letter-spacing: 0.5px; border: 1px solid #222;">STOCK: {{ producto.stock }}</span>
+                {% else %}
+                    <span class="badge rounded-pill" style="background: rgba(220, 53, 69, 0.1); color: #dc3545; font-size: 0.55rem;">AGOTADO</span>
+                {% endif %}
+            </div>
+
+            {% if producto.stock > 0 %}
+                <!-- Selector Estilo Industrial -->
+                <div class="mb-3">
+                    <select class="form-select form-select-sm border-0 variant-selector"
+                            style="background: #1a1a1a; color: #eee; border-radius: 12px; font-size: 0.75rem; height: 40px; border: 1px solid #222 !important;"
+                            data-product-id="{{ producto.id }}"
+                            data-base-price="{{ producto.precio }}">
+                        
+                        <option value="base" data-precio="0">Configuración Base</option>
+                        
+                        {% for v in producto.variantes.all %}
+                            <option value="{{ v.id }}" data-precio="{{ v.precio_adicional }}">
+                                {{ v.capacidad }} - {{ v.color }} (+${{ v.precio_adicional }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Botones Naranja Eléctrico -->
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="d-flex align-items-center bg-black rounded-3 px-2" style="border: 1px solid #222; height: 44px;">
+                        <input type="number" id="qty-{{ producto.id }}" value="1" min="1" max="{{ producto.stock }}"
+                               class="form-control form-control-sm text-center bg-transparent border-0 text-white fw-bold"
+                               style="width: 35px; font-size: 0.85rem; box-shadow: none;">
+                    </div>
+                    
+                    <button class="btn flex-fill rounded-3 fw-bold btn-add"
+                            style="font-size: 0.8rem; height: 44px; background: #ff6b00 !important; color: #000 !important; border: none !important; shadow: none !important;"
+                            data-index="{{ producto.id }}">
+                        AGREGAR
+                    </button>
+                    
+                    <a href="{% url 'cart_summary' %}" class="btn rounded-3 d-flex align-items-center justify-content-center buy-btn-icon"
+                       style="width: 44px; height: 44px; background: #1a1a1a; border: 1px solid #222; color: #ff6b00; transition: 0.3s;">
+                        <i class="bi bi-cart3"></i>
+                    </a>
+                </div>
+            {% else %}
+                <button class="btn disabled w-100 rounded-3 fw-bold" 
+                        style="font-size: 0.8rem; height: 44px; background: #111; color: #444; border: 1px solid #222;">
+                    OUT OF STOCK
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+
+/* Hover de la card con brillo naranja en el borde */
+.product-card:hover {
+    border-color: #ff6b00 !important;
+    box-shadow: 0 0 30px rgba(255, 107, 0, 0.1) !important;
+    text-shadow: 0 0 15px rgba(255, 107, 0, 0.6);
+    transform: scale(1.05);
+    transition: all 0.3s ease;
+}
+
+/* Efecto para el icono de carrito */
+.buy-btn-icon:hover {
+    background: #ff6b00 !important;
+    color: #000 !important;
+    border-color: #ff6b00 !important;
+}
+
+/* Scrollbar personalizada para el selector si fuera necesaria */
+.variant-selector:focus {
+    box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.3);
+}
+.product-card {
+    /* Degradado sutil para que no sea negro plano */
+    background: linear-gradient(180deg, #111 0%, #050505 100%) !important;
+    position: relative;
+}
+
+/* Un resplandor naranja que "gotea" desde el título */
+.product-card::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    border-radius: 24px;
+    background: radial-gradient(circle at 50% 0%, rgba(255, 107, 0, 0.05), transparent 70%);
+    pointer-events: none;
+}
+
+</style>

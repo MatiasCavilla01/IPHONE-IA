@@ -1,0 +1,123 @@
+:root {
+  --bg-color: #f2f2f2; /* Gris muy claro de fondo */
+  --card-bg: #ffffff; /* Blanco puro para las cards */
+  --text-main: #000000;
+  --border-color: #000000;
+  --accent-color: #000000; /* Botones negros */
+  --accent-text: #ffffff;
+  --font-main: 'Inter', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-main);
+}
+
+/* --- Layout Principal --- */
+aside {
+  border-right: 1px solid var(--border-color);
+}
+
+/* --- Títulos --- */
+h1, h2, h3, h4, h5, .card-title {
+  font-family: var(--font-main);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -1.5px;
+}
+
+/* --- Título Dinámico (Explorando...) --- */
+h1.fw-extrabold {
+  font-size: 3rem !important;
+}
+
+/* --- Cards de Producto (El cambio principal) --- */
+.product-card {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0px !important; /* Cuadrado total */
+  box-shadow: none !important; /* Cero sombras suaves */
+  transition: all 0.2s ease;
+  padding: 1.5rem !important;
+}
+
+.product-card:hover {
+  background-color: #f8f8f8 !important; /* Un cambio de tono sutil */
+  transform: translate(-4px, -4px); /* Efecto de 'levantado' rígido */
+  box-shadow: 4px 4px 0px var(--border-color) !important; /* Sombra dura */
+}
+
+/* --- Imagen del Producto --- */
+.product-card .position-relative.bg-light {
+  background-color: #fff !important; /* Fondo blanco para la imagen */
+  border-radius: 0px !important;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* --- Badge de Categoría --- */
+.product-card .badge {
+  background-color: var(--border-color) !important;
+  color: var(--card-bg) !important;
+  border-radius: 0px !important;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 400;
+}
+
+/* --- Precios --- */
+.card-text-price, .fw-extrabold.text-dark {
+  font-family: var(--font-mono);
+  font-weight: 400 !important;
+  letter-spacing: -0.5px;
+  color: var(--text-main) !important;
+}
+
+/* --- Selectores y Inputs --- */
+.form-select, .form-control {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0px !important;
+  background-color: var(--card-bg) !important;
+  font-family: var(--font-mono);
+}
+
+/* --- Botones --- */
+.btn-dark, .btn-add {
+  background-color: var(--accent-color) !important;
+  color: var(--accent-text) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0px !important;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+}
+
+.btn-dark:hover, .btn-add:hover {
+  background-color: var(--card-bg) !important;
+  color: var(--accent-color) !important;
+}
+
+/* --- Botón Carrito Circular --- */
+.buy-btn-icon {
+  border-radius: 0px !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+/* --- Sidebar Links --- */
+.category-link {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  border-bottom: 1px solid transparent !important;
+}
+
+.category-link:hover {
+  border-bottom: 1px solid var(--border-color) !important;
+  background: none !important;
+}
+
+.active-custom {
+  font-weight: 700;
+  color: var(--accent-color) !important;
+}

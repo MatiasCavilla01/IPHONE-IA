@@ -1,0 +1,148 @@
+:root {
+  --bg-color: #000000; /* Negro absoluto */
+  --card-bg: #111111; /* Gris casi negro */
+  --text-main: #ffffff;
+  --text-muted: #888888;
+  --border-color: #222222; /* Bordes muy sutiles */
+  --accent-color: #007bff; /* Azul Eléctrico de acento */
+  --accent-text: #ffffff;
+  --font-main: 'Inter', sans-serif;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  letter-spacing: -0.2px;
+}
+
+/* --- Layout Principal --- */
+aside {
+  border-right: 1px solid var(--border-color);
+}
+
+/* --- Títulos --- */
+h1, h2, h3, h4, h5, .card-title {
+  color: var(--text-main) !important;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+/* --- Texto Muted --- */
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+/* --- Cards de Producto --- */
+.product-card {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  padding: 1rem !important;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  border-color: #444 !important; /* Resalta el borde */
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5) !important;
+}
+
+/* --- Imagen del Producto --- */
+.product-card .position-relative.bg-light {
+  background-color: #080808 !important; /* Fondo casi negro */
+  border-radius: 12px !important;
+  border: 1px solid var(--border-color);
+}
+
+/* --- Badge de Categoría (Estilo 'Píldora Flotante') --- */
+.product-card .badge {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-muted) !important;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* --- Precios --- */
+.fw-extrabold.text-dark {
+  color: var(--text-main) !important;
+  font-weight: 800 !important;
+}
+
+/* --- Estrellas de Calificación --- */
+.text-warning {
+  color: #ffc107 !important; /* Amarillo estándar */
+}
+
+/* --- Selectores y Inputs --- */
+.form-select, .form-control {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 10px !important;
+  background-color: #080808 !important;
+  color: var(--text-main) !important;
+}
+
+.form-select:focus, .form-control:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
+}
+
+/* --- Botones --- */
+.btn-dark, .btn-add {
+  background-color: var(--accent-color) !important; /* Botón Azul Eléctrico */
+  color: var(--accent-text) !important;
+  border: none !important;
+  border-radius: 30px !important;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.btn-dark:hover, .btn-add:hover {
+  background-color: #0069d9 !important; /* Un azul más oscuro */
+  transform: scale(1.02);
+}
+
+/* --- Botón Carrito Circular --- */
+.buy-btn-icon {
+  color: var(--text-muted) !important;
+  border-color: var(--border-color) !important;
+  border-radius: 50% !important;
+}
+
+.buy-btn-icon:hover {
+  color: var(--text-main) !important;
+  border-color: var(--text-main) !important;
+  background-color: rgba(255,255,255,0.05) !important;
+}
+
+/* --- Sidebar Links --- */
+.category-link {
+  color: var(--text-muted) !important;
+  transition: color 0.2s ease;
+}
+
+.category-link:hover {
+  color: var(--text-main) !important;
+  background: none !important;
+}
+
+.active-custom {
+  color: var(--accent-color) !important;
+  font-weight: 600;
+}
+
+.explore-btn {
+  background-color: #111 !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.explore-btn:hover {
+  background-color: #1a1a1a !important;
+  border-color: #333 !important;
+}
